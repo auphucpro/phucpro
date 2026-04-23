@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PHỤC PRO P.128</title>
+    
+    <meta name="theme-color" content="#0b1121">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="P.128">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <style>
+        :root {
+            --primary: #00e5ff; 
+            --primary-dark: #0284c7;
+            --bg-color: #0b1121; 
+            --card-bg: #151e32; 
+            --text-color: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --border-color: #2a3b5c;
+            --danger: #ff0055; 
+            --success: #00f260; 
+            --warning: #ffb703;
+            --shadow-out: 4px 4px 10px rgba(0,0,0,0.5), -2px -2px 8px rgba(255,255,255,0.05);
+            --shadow-in: inset 4px 4px 8px rgba(0,0,0,0.6), inset -2px -2px 6px rgba(255,255,255,0.05);
+        }
+        
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0;
+            -webkit-font-smoothing: antialiased; overflow-x: hidden; 
+        }
+
+        header {
+            background-color: rgba(11, 17, 33, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            color: white; padding: 15px 16px; position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); height: 35px;
+        }
+        .header-spacer { width: 30px; } 
+        
+        /* CSS MỚI CHO LOGO */
+        .header-logo { 
+            height: 35px; 
+            object-fit: contain; 
+            filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.4)); 
+            cursor: pointer;
+        }
+        .header-title-fallback { flex: 1; text-align: center; font-weight: 800; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); letter-spacing: 1px; font-size: 1.3rem;}
+        
+        .calc-icon { width: 30px; display: flex; justify-content: flex-end; cursor: pointer; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .calc-icon:active { transform: scale(0.7); }
+
+        .tabs {
+            display: flex; gap: 5px; margin: 15px; padding: 5px; overflow: hidden; 
+        }
+        .tab-btn {
+            flex: 1; padding: 12px 2px; border: none; font-size: 0.85rem; font-weight: 700;
+            color: var(--text-muted); border-radius: 12px; cursor: pointer;
+            background: linear-gradient(145deg, #18233a, #141d30); box-shadow: var(--shadow-out);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); transform: translateY(0);
+            white-space: nowrap; text-align: center;
+        }
+        .tab-btn.active { 
+            background: linear-gradient(145deg, var(--primary-dark), var(--primary));
+            color: white; box-shadow: var(--shadow-in); transform: translateY(3px) scale(0.98); 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .tab-content { display: none; padding: 0 15px 15px 15px; animation: fadeUpTab 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .tab-content.active { display: block; }
+        @keyframes fadeUpTab { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .tile-card {
+            margin-bottom: 16px; border-radius: 16px; background: var(--card-bg);
+            box-shadow: var(--shadow-out); border: 1px solid rgba(255,255,255,0.02);
+            overflow: visible; transition: transform 0.3s ease;
+        }
+
+        .tile-header {
+            padding: 18px 16px; font-size: 1.1rem; font-weight: 700; color: white; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; border-radius: 16px; transition: all 0.3s ease;
+        }
+        .tile-header:active { background: rgba(0, 229, 255, 0.05); transform: scale(0.98); }
+        .tile-info span { font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 6px; display: block;}
+        
+        .tile-header::after {
+            content: ''; width: 9px; height: 9px; border-right: 2.5px solid var(--text-muted); border-bottom: 2.5px solid var(--text-muted);
+            transform: rotate(45deg); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tile-header.active::after { transform: rotate(-135deg); border-color: var(--primary); }
+
+        .tile-body { display: none; background: rgba(0, 0, 0, 0.15); padding: 18px 16px; position: relative; border-radius: 0 0 16px 16px;}
+        .tile-body.active { display: block; transform-origin: top center; animation: pullDown 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes pullDown { from { opacity: 0; transform: translateY(-20px) scaleY(0.95); } to { opacity: 1; transform: translateY(0) scaleY(1); } }
+        
+        .input-group { display: flex; align-items: center; margin-bottom: 16px; justify-content: space-between; width: 100%; position: relative; }
+        .input-group label { flex: 0 0 100px; font-size: 0.95rem; color: var(--text-muted); font-weight: 600;}
+        .input-group > input, .box-tile-container { flex: 1; min-width: 0; }
+        .box-tile-container { display: flex; gap: 12px; }
+
+        .input-group > input, .box-tile-container input {
+            flex: 1; min-width: 0; padding: 14px; font-size: 1.05rem; font-weight: bold; border: 1px solid var(--border-color);
+            border-radius: 12px; text-align: right; background: #0b1121; color: white; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2), inset 2px 2px 5px rgba(0,0,0,0.5); }
+
+        .suggest-box {
+            position: absolute; top: calc(100% + 8px); left: 100px; right: 0;
+            background: #1e293b; border: 1px solid var(--primary); border-radius: 12px;
+            z-index: 50; display: none; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .suggest-item { padding: 14px; border-bottom: 1px solid var(--border-color); color: white; display: flex; justify-content: space-between; cursor: pointer; transition: background 0.2s;}
+        .suggest-item:active { background: rgba(0, 229, 255, 0.2); }
+        .suggest-item:last-child { border-bottom: none; }
+        .stock-label { font-size: 0.9rem; color: var(--warning); text-align: right; margin-top: -10px; margin-bottom: 14px; min-height: 1rem; font-weight: 700; text-shadow: 0 0 5px rgba(255, 214, 10, 0.3);}
+        
+        .text-danger-input { color: var(--danger) !important; border-color: var(--danger) !important; background: rgba(255, 0, 85, 0.1) !important; box-shadow: 0 0 8px rgba(255,0,85,0.4) !important;}
+
+        .order-action-row { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+        .btn-send-order { background: linear-gradient(145deg, #00d254, #00f260); color: black; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 242, 96, 0.3); transition: transform 0.2s; }
+        .btn-send-order:active { transform: scale(0.9) translateY(2px); box-shadow: none; }
+
+        .result-text { font-weight: 800; color: var(--danger); font-size: 1.25rem; text-shadow: 0 0 5px rgba(255,0,85,0.3);}
+        .line-dash { height: 1px; background: repeating-linear-gradient(90deg, transparent, transparent 5px, var(--border-color) 5px, var(--border-color) 10px); margin: 18px 0; }
+
+        .order-form { background: var(--card-bg); border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow-out); }
+        .order-preview-box { background: #0b1121; border: 1.5px dashed var(--primary); border-radius: 14px; padding: 18px; margin-top: 18px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); }
+        .order-preview-content { white-space: pre-wrap; font-size: 1.1rem; line-height: 1.6; color: #fff; font-weight: 500;}
+        
+        .btn-action { width: 100%; border: none; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 1.05rem; margin-top: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .btn-action:active { transform: scale(0.96) translateY(2px); box-shadow: none !important; }
+        
+        .btn-blue { background: linear-gradient(145deg, #0284c7, var(--primary)); color: black; box-shadow: 0 5px 15px rgba(0, 229, 255, 0.3); }
+        .btn-green { background: linear-gradient(145deg, #00d254, #00f260); color: black; box-shadow: 0 5px 15px rgba(0, 242, 96, 0.2); }
+        .btn-dark { background: #1e293b; color: white; border: 1px solid var(--border-color); box-shadow: var(--shadow-out); }
+
+        .search-box-inv { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); background: #0b1121; color: white; font-size: 1.05rem; margin-bottom: 16px; box-sizing: border-box; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5); }
+        .search-box-inv:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2); }
+        
+        .inv-list { max-height: 60vh; overflow-y: auto; }
+        .inv-item { display: flex; justify-content: space-between; padding: 16px; background: var(--card-bg); border-radius: 12px; margin-bottom: 12px; border-left: 5px solid var(--primary); box-shadow: var(--shadow-out); }
+        .inv-code { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px;}
+        .inv-stock { color: var(--warning); font-weight: 800; font-size: 1.1rem; }
+
+        .calc-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 1000; align-items: center; justify-content: center; }
+        .calc-modal.active { display: flex; animation: fadeInTab 0.3s ease; }
+        .calc-container { background: #151e32; width: 92%; max-width: 360px; border-radius: 24px; padding: 22px; border: 1px solid var(--border-color); display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 20px 50px rgba(0,0,0,0.8);}
+        
+        .history-summary { background: #0b1121; padding: 18px; border-radius: 14px; margin-bottom: 18px; border: 1px solid var(--border-color); text-align: center; box-shadow: inset 2px 2px 8px rgba(0,0,0,0.5);}
+        .history-list { flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 16px; }
+        .history-item { background: #0b1121; padding: 14px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid var(--primary); transition: opacity 0.3s; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3);}
+        .select-date-group { display: flex; gap: 12px; margin-bottom: 18px; }
+        .select-date-group select { flex: 1; padding: 14px; border-radius: 12px; border: none; background: #0b1121; color: white; font-size: 1.05rem; font-weight: 700; outline: none; border: 1px solid var(--border-color); box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);}
+
+        .calc-screen { background: #0b1121; color: white; text-align: right; padding: 12px 18px; border-radius: 14px; margin-bottom: 18px; box-shadow: inset 2px 2px 8px rgba(0,0,0,0.6); border: 1px solid var(--border-color);}
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .calc-btn { background: linear-gradient(145deg, #1e293b, #151e32); color: white; border: none; padding: 18px 0; border-radius: 14px; font-size: 1.3rem; font-weight: 700; box-shadow: var(--shadow-out); cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .calc-btn:active { transform: scale(0.9) translateY(2px); box-shadow: var(--shadow-in); }
+        .calc-btn.op { background: linear-gradient(145deg, #0284c7, var(--primary)); color: black; font-weight: 800;}
+        .calc-btn.eq { background: linear-gradient(145deg, #ff0055, #ff3377); grid-column: span 2; font-weight: 800; color: white;}
+        .calc-history-panel { display: none; background: #0b1121; padding: 12px; border-radius: 14px; max-height: 220px; overflow-y: auto; margin-bottom: 12px; box-shadow: inset 2px 2px 8px rgba(0,0,0,0.6);}
+
+        #swipe-area { min-height: 80vh; padding-bottom: 50vh; }
+
+        /* TOAST NOTIFICATION */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 350px; align-items: center;}
+        .toast-msg { 
+            background: rgba(11, 17, 33, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
+            padding: 14px 20px; border-radius: 14px; font-weight: 800; font-size: 0.95rem; text-align: center; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); width: 100%;
+        }
+        .toast-success { color: var(--success); border-color: rgba(0, 242, 96, 0.3); box-shadow: 0 5px 15px rgba(0, 242, 96, 0.2), 0 10px 25px rgba(0,0,0,0.5); }
+        .toast-error { color: var(--danger); border-color: rgba(255, 0, 85, 0.3); box-shadow: 0 5px 15px rgba(255, 0, 85, 0.2), 0 10px 25px rgba(0,0,0,0.5); }
+        
+        @keyframes slideDownToast { from { opacity: 0; transform: translateY(-20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes slideUpToast { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-20px) scale(0.9); } }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <header>
+        <div class="header-spacer"></div>
+        <img src="logo.png" alt="PHỤC PRO" class="header-logo" onerror="this.outerHTML='<div class=\'header-title-fallback\'>PHỤC PRO P.128</div>'">
+        <div class="calc-icon" onclick="toggleCalc(true)">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="3"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="8" y2="10.01"></line><line x1="12" y1="10" x2="12" y2="10.01"></line><line x1="16" y1="10" x2="16" y2="10.01"></line><line x1="8" y1="14" x2="8" y2="14.01"></line><line x1="12" y1="14" x2="12" y2="14.01"></line><line x1="16" y1="14" x2="16" y2="14.01"></line><line x1="8" y1="18" x2="8" y2="18.01"></line><line x1="12" y1="18" x2="12" y2="18.01"></line><line x1="16" y1="18" x2="16" y2="18.01"></line></svg>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button id="btn-pak" class="tab-btn active" onclick="openTab(event, 'tab-pak')">Gạch PAK</button>
+        <button id="btn-hg" class="tab-btn" onclick="openTab(event, 'tab-hg')">Hoàng Gia</button>
+        <button id="btn-inv" class="tab-btn" onclick="openTab(event, 'tab-inv')">Tồn Kho</button>
+        <button id="btn-order" class="tab-btn" onclick="openTab(event, 'tab-order')">Đơn Hàng</button>
+    </div>
+
+    <div id="swipe-area">
+        <div id="tab-pak" class="tab-content active"></div>
+        <div id="tab-hg" class="tab-content"></div>
+        
+        <div id="tab-inv" class="tab-content">
+            <button class="btn-action btn-blue" style="margin-top: 0; margin-bottom: 18px; border-radius: 14px; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="document.getElementById('inv_img_upload').click()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> 
+                TẢI ẢNH ĐỌC KHO A4
+            </button>
+            <input type="file" id="inv_img_upload" accept="image/*" style="display:none;" onchange="processInventoryImage(event)">
+            <div id="ocr_status" style="color:var(--warning); text-align:center; margin-bottom:15px; display:none; font-weight:bold; text-shadow: 0 0 5px rgba(255,214,10,0.5);">Đang phân tích ảnh...</div>
+
+            <input type="text" id="search_inv" class="search-box-inv" placeholder="🔍 Nhập mã gạch để tìm..." oninput="renderInventory(this.value)">
+            <div id="inv_list" class="inv-list"></div>
+        </div>
+
+        <div id="tab-order" class="tab-content">
+            <div class="order-form">
+                
+                <div class="input-group" style="position:relative;">
+                    <label>Tên CH:</label>
+                    <input type="text" id="order_ch" placeholder="CH Phục Pro..." oninput="suggestStore(this.value)" autocomplete="off">
+                    <div id="suggest_ch" class="suggest-box"></div>
+                </div>
+
+                <div class="input-group" style="position:relative;">
+                    <label>Mã số:</label>
+                    <input type="text" id="order_ms" placeholder="Nhập mã..." oninput="searchStockInOrder(this.value)" autocomplete="off">
+                    <div id="suggest_order" class="suggest-box"></div>
+                </div>
+                <div id="stock_label_order" class="stock-label"></div>
+
+                <div class="input-group">
+                    <label>Thùng:</label>
+                    <input type="number" id="order_box" placeholder="0" oninput="updateOrderPreview()">
+                </div>
+                <div class="input-group">
+                    <label>Viên:</label>
+                    <input type="number" id="order_tile" placeholder="0" oninput="updateOrderPreview()">
+                </div>
+                <input type="hidden" id="order_sqm" value="0">
+                
+                <div class="input-group">
+                    <label>Giá (k/m):</label>
+                    <input type="number" id="order_price" placeholder="111" oninput="updateOrderPreview()">
+                </div>
+
+                <div class="input-group" style="position:relative; align-items: stretch;">
+                    <label style="display:flex; align-items:center;">Hình thức:</label>
+                    <div style="display:flex; flex:1; min-width:0;">
+                        <button id="btn_delivery_type" onclick="toggleDeliveryType()" style="background:var(--primary); color:black; border:none; padding:12px; border-radius:12px 0 0 12px; font-weight:800; font-size:1.05rem; cursor:pointer; width: 85px; box-shadow: inset 2px 2px 5px rgba(255,255,255,0.3);">Giao</button>
+                        <input type="text" id="order_delivery" placeholder="Chành xe..." oninput="suggestDeli(this.value)" autocomplete="off" style="flex:1; border-radius:0 12px 12px 0; border-left:none; min-width:0;">
+                    </div>
+                    <div id="suggest_deli" class="suggest-box" style="left:100px;"></div>
+                </div>
+
+            </div>
+
+            <div class="order-preview-box">
+                <div id="order_preview" class="order-preview-content">Mẫu đơn hàng sẽ hiện ở đây...</div>
+            </div>
+            
+            <button class="btn-action btn-blue" onclick="copyOrderText()">SAO CHÉP ĐƠN</button>
+            <button class="btn-action btn-green" onclick="saveOrderToHistory()">LƯU VÀO LỊCH SỬ</button>
+            <button class="btn-action btn-dark" onclick="toggleOrderHistoryModal(true)">XEM LỊCH SỬ ĐÃ BÁN</button>
+        </div>
+    </div>
+
+    <div id="calc-modal" class="calc-modal">
+        <div class="calc-container" style="justify-content: center;">
+            <div class="calc-header-actions" style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                <div onclick="toggleHistoryView()" style="color:var(--primary); font-size:1rem; cursor:pointer; font-weight:800; text-shadow:0 0 5px rgba(0,229,255,0.3);">🕒 Lịch sử bấm</div>
+            </div>
+            <div class="calc-screen">
+                <div id="calc-live" style="font-size:1.1rem; color:var(--text-muted); min-height:1.4rem;"></div>
+                <div id="calc-main" style="font-size:2.4rem; font-weight:700; overflow-x:auto;">0</div>
+            </div>
+            <div id="calc-history-panel" class="calc-history-panel"><ul id="calc-history-list" style="list-style:none; padding:0; color:#fff;"></ul></div>
+            <div class="calc-grid" id="calc-grid">
+                <button class="calc-btn" style="background:#475569" onclick="inputCalc('C')">C</button>
+                <button class="calc-btn op" onclick="inputCalc('(')">(</button><button class="calc-btn op" onclick="inputCalc(')')">)</button><button class="calc-btn op" onclick="inputCalc('/')">÷</button>
+                <button class="calc-btn" onclick="inputCalc('7')">7</button><button class="calc-btn" onclick="inputCalc('8')">8</button><button class="calc-btn" onclick="inputCalc('9')">9</button><button class="calc-btn op" onclick="inputCalc('*')">×</button>
+                <button class="calc-btn" onclick="inputCalc('4')">4</button><button class="calc-btn" onclick="inputCalc('5')">5</button><button class="calc-btn" onclick="inputCalc('6')">6</button><button class="calc-btn op" onclick="inputCalc('-')">−</button>
+                <button class="calc-btn" onclick="inputCalc('1')">1</button><button class="calc-btn" onclick="inputCalc('2')">2</button><button class="calc-btn" onclick="inputCalc('3')">3</button><button class="calc-btn op" onclick="inputCalc('+')">+</button>
+                <button class="calc-btn" onclick="inputCalc('0')">0</button><button class="calc-btn" onclick="inputCalc('.')">.</button><button class="calc-btn eq" onclick="inputCalc('=')">=</button>
+            </div>
+            <div style="text-align:center; margin-top:20px; color:var(--text-muted); cursor:pointer; font-weight:800; letter-spacing:1px;" onclick="toggleCalc(false)">ĐÓNG MÁY TÍNH</div>
+        </div>
+    </div>
+
+    <div id="order-history-modal" class="calc-modal">
+        <div class="calc-container" style="height: 88vh;">
+            <h3 style="color:white; margin-top:0; text-align:center; font-weight:800; text-shadow:0 0 10px rgba(0,229,255,0.4);">LỊCH SỬ BÁN HÀNG</h3>
+            <div class="select-date-group">
+                <select id="history-month" onchange="renderOrderHistory()">
+                    <option value="01">Tháng 01</option> <option value="02">Tháng 02</option>
+                    <option value="03">Tháng 03</option> <option value="04">Tháng 04</option>
+                    <option value="05">Tháng 05</option> <option value="06">Tháng 06</option>
+                    <option value="07">Tháng 07</option> <option value="08">Tháng 08</option>
+                    <option value="09">Tháng 09</option> <option value="10">Tháng 10</option>
+                    <option value="11">Tháng 11</option> <option value="12">Tháng 12</option>
+                </select>
+                <select id="history-year" onchange="renderOrderHistory()">
+                    <option value="2024">Năm 2024</option> <option value="2025">Năm 2025</option>
+                    <option value="2026">Năm 2026</option> <option value="2027">Năm 2027</option>
+                    <option value="2028">Năm 2028</option> <option value="2029">Năm 2029</option>
+                    <option value="2030">Năm 2030</option>
+                </select>
+            </div>
+            <div class="history-summary">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="color:var(--text-muted); font-weight:600;">Tổng số mét:</span>
+                    <span style="color:white; font-weight:800; font-size:1.15rem;" id="total-sqm-text">0 m²</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--text-muted); font-weight:600;">Tổng tiền:</span>
+                    <span style="color:var(--danger); font-weight:800; font-size:1.4rem; text-shadow:0 0 8px rgba(255,0,85,0.4);" id="total-money-text">0 đ</span>
+                </div>
+            </div>
+            <div id="order-list-render" class="history-list"></div>
+            <div style="display:flex; gap:12px;">
+                <button style="flex:1; background:linear-gradient(145deg, #ff0055, #cc0044); color:white; border:none; padding:14px; border-radius:12px; font-weight:800; cursor:pointer; box-shadow:var(--shadow-out);" onclick="clearCurrentMonthHistory()">XÓA THÁNG NÀY</button>
+                <button style="flex:1; background:linear-gradient(145deg, #334155, #1e293b); color:white; border:none; padding:14px; border-radius:12px; font-weight:800; cursor:pointer; box-shadow:var(--shadow-out);" onclick="toggleOrderHistoryModal(false)">ĐÓNG</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-confirm" class="calc-modal">
+        <div class="calc-container" style="justify-content: center; text-align: center; padding: 25px; width: 85%; max-width: 320px;">
+            <h3 style="color: var(--primary); margin-top: 0; font-weight: 800; text-shadow: 0 0 10px rgba(0,229,255,0.4); letter-spacing: 0.5px;">Chào Bạn Mình Là P.128</h3>
+            <div id="confirm-msg" style="color: white; font-size: 1.1rem; margin-bottom: 25px; line-height: 1.5; font-weight: 500;"></div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="closeConfirm()" style="flex: 1; background: #1e293b; color: white; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-out); transition: transform 0.2s;">Hủy</button>
+                <button onclick="executeConfirm()" style="flex: 1; background: linear-gradient(145deg, #ff0055, #cc0044); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(255,0,85,0.3); transition: transform 0.2s;">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tileData = {
+            pak: [
+                { id: 'pak1', name: '30x60 men', tilesPerBox: 9, sqmPerBox: 1.62, weightPerBox: 26.5 },
+                { id: 'pak2', name: '40x80 men', tilesPerBox: 5, sqmPerBox: 1.6, weightPerBox: 28 },
+                { id: 'pak3', name: '60x60 men', tilesPerBox: 5, sqmPerBox: 1.8, weightPerBox: 32.5 }
+            ],
+            hg: [
+                { id: 'hg1', name: '30x60 men', tilesPerBox: 8, sqmPerBox: 1.44, weightPerBox: 25 },
+                { id: 'hg2', name: '50x50 SV HGia', tilesPerBox: 6, sqmPerBox: 1.5, weightPerBox: 27.5 },
+                { id: 'hg3', name: '50x50 men nền', tilesPerBox: 6, sqmPerBox: 1.5, weightPerBox: 25.5 },
+                { id: 'hg4', name: '60x60 Pancera', tilesPerBox: 5, sqmPerBox: 1.8, weightPerBox: 33 },
+                { id: 'hg5', name: '30x60 Vicenza đá', tilesPerBox: 8, sqmPerBox: 1.44, weightPerBox: 29 },
+                { id: 'hg6', name: '40x80 Vicenza đá', tilesPerBox: 5, sqmPerBox: 1.6, weightPerBox: 33.5 },
+                { id: 'hg7', name: '60x60 Vicenza đá', tilesPerBox: 4, sqmPerBox: 1.44, weightPerBox: 30 },
+                { id: 'hg8', name: '60x60 Vidona đá', tilesPerBox: 5, sqmPerBox: 1.8, weightPerBox: 37.5 },
+                { id: 'hg9', name: '80x80 Vidona đá', tilesPerBox: 3, sqmPerBox: 1.92, weightPerBox: 45 }
+            ]
+        };
+
+        let localInventoryDB = [
+            {"code": "60216A1", "stock": 354}, {"code": "60221A1", "stock": 540}, {"code": "60223A1", "stock": 34},
+            {"code": "60230A1", "stock": 200}, {"code": "60260A1", "stock": 386}, {"code": "60262A1", "stock": 183},
+            {"code": "60266A1", "stock": 607}, {"code": "60267A1", "stock": 71}, {"code": "60268A1", "stock": 193},
+            {"code": "60269A1", "stock": 601}, {"code": "ML6874A1", "stock": 195}, {"code": "486111A1", "stock": 234},
+            {"code": "486112A1", "stock": 15}, {"code": "486113A1", "stock": 75}, {"code": "489231A1", "stock": 33},
+            {"code": "V489234A1", "stock": 24}, {"code": "488191A1", "stock": 225}, {"code": "D488192A1", "stock": 4},
+            {"code": "V488194A1", "stock": 75}, {"code": "363600A1", "stock": 399}, {"code": "V363664A1", "stock": 64},
+            {"code": "D363662A1", "stock": 13}, {"code": "363602A1", "stock": 316}, {"code": "V363674A1", "stock": 53},
+            {"code": "D363672A1", "stock": 15}, {"code": "363631A1", "stock": 249}, {"code": "D363632A1", "stock": 8},
+            {"code": "363633A1", "stock": 32}, {"code": "50221A1", "stock": 63}, {"code": "50222A1", "stock": 137},
+            {"code": "VD66001A", "stock": 240}, {"code": "VD66011A", "stock": 76}, {"code": "VD66018A", "stock": 84},
+            {"code": "PN3613A1", "stock": 1401}, {"code": "V3613A1", "stock": 286}, {"code": "VD66001A1", "stock": 377},
+            {"code": "VD66008A1", "stock": 99}, {"code": "VD66009A1", "stock": 211}, {"code": "VD66011A1", "stock": 287},
+            {"code": "VD66013A1", "stock": 234}, {"code": "VD66015A1", "stock": 385}, {"code": "VD66016A1", "stock": 182},
+            {"code": "VD66017A1", "stock": 228}, {"code": "VD66018A1", "stock": 77}, {"code": "VD88001A1", "stock": 198},
+            {"code": "VD88009A1", "stock": 302}, {"code": "VD88011A1", "stock": 210}, {"code": "VD88013A1", "stock": 191},
+            {"code": "VD88014A1", "stock": 71}, {"code": "VD88015A1", "stock": 184}, {"code": "VD88016A1", "stock": 151},
+            {"code": "VD88017A1", "stock": 107}, {"code": "VD88018A1", "stock": 37}, {"code": "MLP48100A", "stock": 279},
+            {"code": "MLP48100VA", "stock": 66}, {"code": "MLP48100DA", "stock": 21}, {"code": "MLP48101A", "stock": 175},
+            {"code": "MLP48101VA", "stock": 64}, {"code": "MLP48102BA", "stock": 140}, {"code": "MLP48102DA", "stock": 35},
+            {"code": "MLP48103MA", "stock": 78}, {"code": "MLP48103MBA", "stock": 62}, {"code": "MLP48103MDA", "stock": 15},
+            {"code": "MLP48104MA", "stock": 87}, {"code": "MLP48104MBA", "stock": 80}, {"code": "MLP48104MDA", "stock": 30},
+            {"code": "3HG004AA", "stock": 153}, {"code": "3HG009AA", "stock": 169}, {"code": "3HG010AA", "stock": 168},
+            {"code": "3HG015AA", "stock": 132}, {"code": "3HG016AA", "stock": 157}, {"code": "3SU021AA", "stock": 93},
+            {"code": "3SU024AA", "stock": 88}, {"code": "3SU025AA", "stock": 191}, {"code": "3SU026AA", "stock": 191},
+            {"code": "3SU027AA", "stock": 106}, {"code": "3SU028AA", "stock": 151}, {"code": "3SU029AA", "stock": 88},
+            {"code": "3SU032AA", "stock": 88}, {"code": "3SU033AA", "stock": 91}, {"code": "SBB5513AA", "stock": 277},
+            {"code": "SBB5516AA", "stock": 239}, {"code": "SBB5517AA", "stock": 369}, {"code": "SBB5518AA", "stock": 186},
+            {"code": "SBB5519AA", "stock": 143}, {"code": "SBB5520AA", "stock": 260}, {"code": "SBB5521AA", "stock": 203},
+            {"code": "SBB5522AA", "stock": 181}, {"code": "SBB5523AA", "stock": 145}, {"code": "SBB5524AA", "stock": 216},
+            {"code": "SBB5525AA", "stock": 163}, {"code": "SBB5526AA", "stock": 244}, {"code": "SBB5527AA", "stock": 261},
+            {"code": "SBB5528AA", "stock": 267}, {"code": "P502A", "stock": 185}, {"code": "P503A", "stock": 20},
+            {"code": "KS5122AA-6", "stock": 74}, {"code": "KS5125AA-6", "stock": 26}, {"code": "R360083AA", "stock": 58},
+            {"code": "VR360083AA", "stock": 18}, {"code": "DR360083AA", "stock": 55}, {"code": "R360088AA", "stock": 35},
+            {"code": "VR360088AA", "stock": 48}, {"code": "DR360088AA", "stock": 41}, {"code": "R360089AA", "stock": 6},
+            {"code": "VR360089AA", "stock": 35}, {"code": "DR360089AA", "stock": 52}, {"code": "R360090AA", "stock": 184},
+            {"code": "VR360090AA", "stock": 38}, {"code": "DR360090AA", "stock": 63}, {"code": "TNR360092AA", "stock": 185},
+            {"code": "TDR360092AA", "stock": 119}, {"code": "DR360092AA", "stock": 79}, {"code": "8R360093AA", "stock": 294},
+            {"code": "V8R360093AA", "stock": 58}, {"code": "D8R360093AA", "stock": 75}, {"code": "8R360094AA", "stock": 270},
+            {"code": "V8R360094AA", "stock": 48}, {"code": "D8R360094AA", "stock": 57}, {"code": "TN8R360095AA", "stock": 488},
+            {"code": "TD8R360095AA", "stock": 302}, {"code": "D8R360095AA", "stock": 69}, {"code": "TN8R360096AA", "stock": 130},
+            {"code": "TD8R360096AA", "stock": 117}, {"code": "D8R360096AA", "stock": 81}, {"code": "8MTN360097AA", "stock": 193},
+            {"code": "8MTD360097AA", "stock": 126}, {"code": "8MD360097AA", "stock": 42},
+            {"code": "P6000A", "stock": 35}, {"code": "P6800A", "stock": 21}, {"code": "P6801A", "stock": 166},
+            {"code": "P6802A", "stock": 163}, {"code": "P6803A", "stock": 150}, {"code": "P6804A", "stock": 152},
+            {"code": "P6805A", "stock": 196}, {"code": "P6806A", "stock": 85}, {"code": "P6807A", "stock": 351},
+            {"code": "P6809A", "stock": 112}, {"code": "MLCT367A", "stock": 153}, {"code": "MLCT367BA", "stock": 207},
+            {"code": "MLCT367DA", "stock": 22}, {"code": "MLCT368A", "stock": 24}, {"code": "MLCT368BA", "stock": 89},
+            {"code": "MLCT368DA", "stock": 5}, {"code": "MLCT369A", "stock": 101}, {"code": "MLCT369DA", "stock": 16},
+            {"code": "MLCT369VA", "stock": 0}, {"code": "MLCT370A", "stock": 67}, {"code": "MLCT370BA", "stock": 81},
+            {"code": "MLCT370DA", "stock": 60}, {"code": "MLCT371A", "stock": 148}, {"code": "MLCT371BA", "stock": 159},
+            {"code": "MLCT371DA", "stock": 81}, {"code": "MLCT372A", "stock": 121}, {"code": "MLCT372DA", "stock": 37},
+            {"code": "MLCT372VA", "stock": 38}, {"code": "MLP601A1", "stock": 170}, {"code": "MLP602A1", "stock": 75},
+            {"code": "MLP603A1", "stock": 142}, {"code": "MLP604A1", "stock": 66}, {"code": "MLP605A1", "stock": 143},
+            {"code": "MLP606A1", "stock": 215}, {"code": "MLP607A1", "stock": 4}
+        ];
+
+        let orderDB = []; let storeDB = []; let deliDB = [];
+        try {
+            orderDB = JSON.parse(localStorage.getItem('phucpro_orders')) || [];
+            storeDB = JSON.parse(localStorage.getItem('phucpro_stores')) || [];
+            deliDB = JSON.parse(localStorage.getItem('phucpro_deli')) || [];
+        } catch(e) {}
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type === 'error' ? 'toast-error' : 'toast-success'}`;
+            toast.innerText = msg;
+            toast.style.animation = 'slideDownToast 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideUpToast 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        let pendingConfirmCallback = null;
+        function showConfirm(msg, callback) {
+            document.getElementById('confirm-msg').innerText = msg;
+            pendingConfirmCallback = callback;
+            document.getElementById('custom-confirm').classList.add('active');
+        }
+        function closeConfirm() {
+            document.getElementById('custom-confirm').classList.remove('active');
+            pendingConfirmCallback = null;
+        }
+        function executeConfirm() {
+            if(pendingConfirmCallback) pendingConfirmCallback();
+            closeConfirm();
+        }
+
+        function openTab(evt, tabId) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) tabcontent[i].classList.remove("active");
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
+            
+            document.getElementById(tabId).classList.add("active");
+            if(evt) evt.currentTarget.classList.add("active");
+            else document.getElementById(`btn-${tabId.split('-')[1]}`).classList.add("active");
+            
+            window.scrollTo(0, 0);
+            if(tabId === 'tab-inv') renderInventory('');
+        }
+
+        function suggestStore(val) {
+            const box = document.getElementById('suggest_ch');
+            if(val.length >= 1) {
+                const matches = storeDB.filter(s => s.toUpperCase().includes(val.toUpperCase())).slice(0, 5);
+                if(matches.length > 0) {
+                    box.innerHTML = matches.map(m => `<div class="suggest-item" onclick="selectStore('${m}')">${m}</div>`).join('');
+                    box.style.display = 'block';
+                } else box.style.display = 'none';
+            } else box.style.display = 'none';
+            updateOrderPreview();
+        }
+        function selectStore(val) {
+            document.getElementById('order_ch').value = val;
+            document.getElementById('suggest_ch').style.display = 'none';
+            updateOrderPreview();
+        }
+
+        function toggleDeliveryType() {
+            const btn = document.getElementById('btn_delivery_type');
+            if(btn.innerText === "Giao") {
+                btn.innerText = "CH";
+                btn.style.background = "var(--warning)";
+                btn.style.color = "black";
+            } else {
+                btn.innerText = "Giao";
+                btn.style.background = "var(--primary)";
+                btn.style.color = "black";
+            }
+            updateOrderPreview();
+        }
+
+        function suggestDeli(val) {
+            const box = document.getElementById('suggest_deli');
+            if(val.length >= 1) {
+                const matches = deliDB.filter(s => s.toUpperCase().includes(val.toUpperCase())).slice(0, 5);
+                if(matches.length > 0) {
+                    box.innerHTML = matches.map(m => `<div class="suggest-item" onclick="selectDeli('${m}')">${m}</div>`).join('');
+                    box.style.display = 'block';
+                } else box.style.display = 'none';
+            } else box.style.display = 'none';
+            updateOrderPreview();
+        }
+        function selectDeli(val) {
+            document.getElementById('order_delivery').value = val;
+            document.getElementById('suggest_deli').style.display = 'none';
+            updateOrderPreview();
+        }
+
+        function processInventoryImage(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const status = document.getElementById('ocr_status');
+            status.style.display = 'block';
+            status.innerText = "Đang tải AI đọc ảnh... (vui lòng chờ)";
+
+            if(!window.Tesseract) {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
+                script.onload = () => runOCR(file);
+                document.head.appendChild(script);
+            } else {
+                runOCR(file);
+            }
+        }
+
+        function runOCR(file) {
+            const status = document.getElementById('ocr_status');
+            status.innerText = "Đang quét phân tích... (Khoảng 10-30s)";
+            
+            Tesseract.recognize(file, 'eng', { 
+                logger: m => { if(m.status === 'recognizing text') status.innerText = `Đang quét... ${Math.round(m.progress * 100)}%`; }
+            }).then(({ data: { text } }) => {
+                const lines = text.split('\n');
+                let count = 0;
+                lines.forEach(line => {
+                    const match = line.match(/([A-Z0-9]{5,})\s+(\d+)/i);
+                    if(match) {
+                        const code = match[1]; const stock = parseInt(match[2]);
+                        const existing = localInventoryDB.find(item => item.code === code);
+                        if(existing) existing.stock = stock;
+                        else localInventoryDB.push({code, stock});
+                        count++;
+                    }
+                });
+                status.innerText = `Hoàn tất! Đã cập nhật ${count} mã gạch.`;
+                renderInventory('');
+                showToast(`Đã quét xong ${count} mã gạch!`, 'success');
+                setTimeout(() => status.style.display = 'none', 4000);
+            }).catch(err => {
+                status.innerText = "Lỗi đọc ảnh. Vui lòng thử lại!";
+                showToast("Lỗi đọc ảnh!", "error");
+                setTimeout(() => status.style.display = 'none', 3000);
+            });
+        }
+
+        function renderInventory(searchStr) {
+            const container = document.getElementById('inv_list');
+            let html = '';
+            const filtered = localInventoryDB.filter(item => item.code.toUpperCase().includes(searchStr.toUpperCase()));
+            
+            filtered.forEach(item => {
+                html += `<div class="inv-item"><span class="inv-code">${item.code}</span><span class="inv-stock">${item.stock} thùng</span></div>`;
+            });
+            if(filtered.length === 0) html = `<div style="text-align:center; padding: 20px; color:var(--text-muted)">Không tìm thấy!</div>`;
+            container.innerHTML = html;
+        }
+
+        function searchStockInTile(id, val) {
+            const suggestBox = document.getElementById(`suggest_${id}`);
+            const stockLabel = document.getElementById(`stock_label_${id}`);
+            
+            if(val.length >= 3) {
+                const matches = localInventoryDB.filter(item => item.code.toUpperCase().includes(val.toUpperCase())).slice(0, 5); 
+                if(matches.length > 0) {
+                    suggestBox.innerHTML = matches.map(m => `<div class="suggest-item" onclick="selectStockInTile('${id}', '${m.code}', ${m.stock})"><span>${m.code}</span><span style="color:var(--warning); font-weight:bold;">Tồn: ${m.stock}</span></div>`).join('');
+                    suggestBox.style.display = 'block';
+                } else {
+                    suggestBox.style.display = 'none';
+                    stockLabel.innerText = "Chưa có dữ liệu";
+                    document.getElementById(`code_${id}`).dataset.stock = -1;
+                }
+            } else {
+                suggestBox.style.display = 'none';
+                stockLabel.innerText = "";
+                document.getElementById(`code_${id}`).dataset.stock = -1;
+            }
+            checkRedWarning(id);
+        }
+
+        function selectStockInTile(id, code, stock) {
+            document.getElementById(`code_${id}`).value = code;
+            document.getElementById(`code_${id}`).dataset.stock = stock;
+            document.getElementById(`suggest_${id}`).style.display = 'none';
+            document.getElementById(`stock_label_${id}`).innerText = `Kho: ${stock} thùng`;
+            checkRedWarning(id);
+        }
+
+        function checkRedWarning(id) {
+            const boxInput = document.getElementById(`box_${id}`);
+            const currentBox = parseInt(boxInput.value) || 0;
+            const stockStr = document.getElementById(`code_${id}`).dataset.stock;
+            const stock = stockStr !== undefined ? parseInt(stockStr) : -1;
+
+            if(stock !== -1 && currentBox > stock) boxInput.classList.add('text-danger-input');
+            else boxInput.classList.remove('text-danger-input');
+        }
+
+        function searchStockInOrder(val) {
+            const suggestBox = document.getElementById(`suggest_order`);
+            const stockLabel = document.getElementById(`stock_label_order`);
+            
+            if(val.length >= 3) {
+                const matches = localInventoryDB.filter(item => item.code.toUpperCase().includes(val.toUpperCase())).slice(0, 5);
+                if(matches.length > 0) {
+                    suggestBox.innerHTML = matches.map(m => `<div class="suggest-item" onclick="selectStockInOrder('${m.code}', ${m.stock})"><span>${m.code}</span><span style="color:var(--warning); font-weight:bold;">Tồn: ${m.stock}</span></div>`).join('');
+                    suggestBox.style.display = 'block';
+                } else {
+                    suggestBox.style.display = 'none';
+                    stockLabel.innerText = "";
+                }
+            } else {
+                suggestBox.style.display = 'none';
+                stockLabel.innerText = "";
+            }
+            updateOrderPreview();
+        }
+        
+        function selectStockInOrder(code, stock) {
+            document.getElementById(`order_ms`).value = code;
+            document.getElementById(`suggest_order`).style.display = 'none';
+            document.getElementById(`stock_label_order`).innerText = `Kho: ${stock} thùng`;
+            updateOrderPreview();
+        }
+
+        function sendToOrder(id) {
+            const boxes = document.getElementById(`box_${id}`).value;
+            const tiles = document.getElementById(`tile_${id}`).value;
+            const sqm = document.getElementById(`sqm_${id}`).value; 
+            const codeInput = document.getElementById(`code_${id}`);
+            
+            let tileInfo = getTile(id);
+            const ms = codeInput.value || (tileInfo ? tileInfo.name : "");
+            
+            document.getElementById('order_box').value = boxes || 0;
+            document.getElementById('order_tile').value = tiles || 0;
+            document.getElementById('order_sqm').value = sqm || 0;
+            document.getElementById('order_ms').value = ms;
+
+            const foundStock = localInventoryDB.find(i => i.code === ms);
+            if(foundStock) document.getElementById('stock_label_order').innerText = `Kho: ${foundStock.stock} thùng`;
+            else document.getElementById('stock_label_order').innerText = "";
+            
+            updateOrderPreview();
+            openTab(null, 'tab-order');
+            reset(id); 
+        }
+
+        function updateOrderPreview() {
+            const ch = document.getElementById('order_ch').value || "...";
+            const ms = document.getElementById('order_ms').value || "...";
+            const box = document.getElementById('order_box').value || "...";
+            const price = document.getElementById('order_price').value || "...";
+            
+            const tileVal = document.getElementById('order_tile').value;
+            const tileText = (tileVal === "" || tileVal === "0") ? "" : ` - ${tileVal} Viên`;
+            
+            const deliType = document.getElementById('btn_delivery_type').innerText;
+            const deli = document.getElementById('order_delivery').value || "...";
+
+            const previewText = `CH ${ch}\nMS: ${ms} - ${box} Thùng${tileText}: ${price}k/m\n${deliType} ${deli}`;
+            document.getElementById('order_preview').innerText = previewText;
+        }
+
+        function copyOrderText() {
+            const text = document.getElementById('order_preview').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Đã sao chép đơn hàng!", "success");
+            });
+        }
+
+        function saveOrderToHistory() {
+            const ch = document.getElementById('order_ch').value.trim();
+            const ms = document.getElementById('order_ms').value;
+            const deli = document.getElementById('order_delivery').value.trim();
+            const sqm = parseFloat(document.getElementById('order_sqm').value) || 0;
+            const price = parseFloat(document.getElementById('order_price').value) || 0;
+            
+            if(!ch && !ms) { 
+                showToast("Bạn chưa nhập Tên CH hoặc Mã gạch!", "error");
+                return; 
+            }
+
+            if(ch && !storeDB.includes(ch)) { 
+                storeDB.push(ch); localStorage.setItem('phucpro_stores', JSON.stringify(storeDB)); 
+            }
+            if(deli && !deliDB.includes(deli)) { 
+                deliDB.push(deli); localStorage.setItem('phucpro_deli', JSON.stringify(deliDB)); 
+            }
+
+            const totalMoney = sqm * price * 1000;
+            const newOrder = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                ch: ch, ms: ms, sqm: sqm, totalMoney: totalMoney,
+                preview: document.getElementById('order_preview').innerText
+            };
+
+            orderDB.push(newOrder);
+            localStorage.setItem('phucpro_orders', JSON.stringify(orderDB));
+
+            document.getElementById('order_ch').value = '';
+            document.getElementById('order_ms').value = '';
+            document.getElementById('order_box').value = '';
+            document.getElementById('order_tile').value = '';
+            document.getElementById('order_sqm').value = '0';
+            document.getElementById('order_price').value = '';
+            document.getElementById('order_delivery').value = '';
+            document.getElementById('stock_label_order').innerText = '';
+            updateOrderPreview();
+
+            showToast("Đã lưu đơn vào lịch sử!", "success");
+        }
+
+        function toggleOrderHistoryModal(show) {
+            const modal = document.getElementById('order-history-modal');
+            if(show) {
+                const now = new Date();
+                document.getElementById('history-month').value = String(now.getMonth()+1).padStart(2,'0');
+                document.getElementById('history-year').value = String(now.getFullYear());
+                renderOrderHistory();
+                modal.classList.add('active');
+            } else {
+                modal.classList.remove('active');
+            }
+        }
+
+        function renderOrderHistory() {
+            const m = document.getElementById('history-month').value;
+            const y = document.getElementById('history-year').value;
+            const monthStr = `${y}-${m}`;
+            const container = document.getElementById('order-list-render');
+
+            let totalSqm = 0; let totalMoney = 0; let html = '';
+
+            const filteredOrders = orderDB.filter(o => {
+                const d = new Date(o.date);
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` === monthStr;
+            }).sort((a,b) => b.id - a.id); 
+
+            filteredOrders.forEach(o => {
+                totalSqm += o.sqm;
+                totalMoney += o.totalMoney;
+                const d = new Date(o.date);
+                const dateText = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} lúc ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+                html += `
+                    <div class="history-item">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                            <div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">🕒 ${dateText}</div>
+                            <div>
+                                <button onclick="copySingleOrder(${o.id})" style="background:linear-gradient(145deg, #1e293b, #151e32); color:var(--primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:8px; font-size:0.8rem; font-weight:800; cursor:pointer; margin-right:5px; box-shadow:var(--shadow-out); transition:all 0.2s;">Copy</button>
+                                <button onclick="deleteSingleOrder(${o.id})" style="background:rgba(255,0,85,0.15); color:var(--danger); border:none; padding:6px 12px; border-radius:8px; font-size:0.8rem; font-weight:800; cursor:pointer; transition:transform 0.2s;">Xóa</button>
+                            </div>
+                        </div>
+                        <div style="color:white; font-size:1.05rem; white-space:pre-wrap; margin-bottom:12px; line-height:1.6; font-weight:500;">${o.preview}</div>
+                        <div style="display:flex; justify-content:space-between; border-top:1px dashed var(--border-color); padding-top:10px; font-size:0.95rem;">
+                            <span style="color:var(--primary); font-weight:800;">${parseFloat(o.sqm.toFixed(3))} m²</span>
+                            <span style="color:var(--danger); font-weight:900; text-shadow:0 0 8px rgba(255,0,85,0.4);">${o.totalMoney.toLocaleString('vi-VN')} đ</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(filteredOrders.length === 0) html = `<div style="text-align:center; color:var(--text-muted); margin-top:30px; font-weight:800; font-size:1.1rem;">Tháng này trống trơn!</div>`;
+            container.innerHTML = html;
+            document.getElementById('total-sqm-text').innerText = `${parseFloat(totalSqm.toFixed(3))} m²`;
+            document.getElementById('total-money-text').innerText = `${totalMoney.toLocaleString('vi-VN')} đ`;
+        }
+
+        function copySingleOrder(id) {
+            const order = orderDB.find(o => o.id === id);
+            if(order) {
+                navigator.clipboard.writeText(order.preview).then(() => {
+                    showToast("Đã sao chép thành công!", "success");
+                });
+            }
+        }
+
+        function deleteSingleOrder(id) {
+            showConfirm('Xóa đơn này nhé?', () => {
+                orderDB = orderDB.filter(o => o.id !== id);
+                localStorage.setItem('phucpro_orders', JSON.stringify(orderDB));
+                renderOrderHistory(); 
+                showToast("Đã xóa đơn hàng!", "error");
+            });
+        }
+
+        function clearCurrentMonthHistory() {
+            const monthStr = document.getElementById('history-year').value + '-' + document.getElementById('history-month').value;
+            showConfirm('CẢNH BÁO: Xóa sạch toàn bộ đơn của tháng này?', () => {
+                orderDB = orderDB.filter(o => {
+                    const d = new Date(o.date);
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` !== monthStr;
+                });
+                localStorage.setItem('phucpro_orders', JSON.stringify(orderDB));
+                renderOrderHistory();
+                showToast("Đã xóa sạch tháng!", "error");
+            });
+        }
+
+        let touchstartX = 0, touchstartY = 0, touchendX = 0, touchendY = 0;
+        const swipeArea = document.getElementById('swipe-area');
+        swipeArea.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; touchstartY = e.changedTouches[0].screenY; }, {passive: true});
+        swipeArea.addEventListener('touchend', e => { 
+            touchendX = e.changedTouches[0].screenX; touchendY = e.changedTouches[0].screenY; 
+            if (Math.abs(touchendX - touchstartX) > 70 && Math.abs(touchendY - touchstartY) < 50) {
+                const tabs = ['tab-pak', 'tab-hg', 'tab-inv', 'tab-order'];
+                let currentIdx = tabs.indexOf(document.querySelector('.tab-content.active').id);
+                if (touchendX < touchstartX && currentIdx < 3) openTab(null, tabs[currentIdx + 1]);
+                else if (touchendX > touchstartX && currentIdx > 0) openTab(null, tabs[currentIdx - 1]);
+            }
+        }, {passive: true});
+
+        let calcVal = ""; let calcHistory = [];
+        function toggleCalc(s) { document.getElementById('calc-modal').classList.toggle('active', s); }
+        function toggleHistoryView() { 
+            const p = document.getElementById('calc-history-panel'); 
+            p.style.display = (p.style.display === 'none') ? 'block' : 'none';
+            document.getElementById('calc-history-list').innerHTML = calcHistory.map(h => `<li>${h}</li>`).join('');
+        }
+        function inputCalc(v) {
+            const m = document.getElementById('calc-main'); const l = document.getElementById('calc-live');
+            if (v === 'C') { calcVal = ""; l.innerText = ""; }
+            else if (v === '=') { 
+                try { let r = eval(calcVal).toString(); calcHistory.push(calcVal + " = " + r); calcVal = r; l.innerText = ""; }
+                catch(e) { calcVal = "Lỗi"; setTimeout(() => { calcVal = ""; m.innerText = "0"; }, 1000); }
+            } else { calcVal += v; try { l.innerText = "= " + eval(calcVal.replace(/[\+\-\*\/\.]$/, '')); } catch(e) {} }
+            m.innerText = calcVal || "0";
+        }
+
+        function toggleTile(id) {
+            const h = document.getElementById(`header_${id}`); const b = document.getElementById(`body_${id}`);
+            document.querySelectorAll('.tile-header').forEach(x => { if(x.id !== `header_${id}`) x.classList.remove('active') });
+            document.querySelectorAll('.tile-body').forEach(x => { if(x.id !== `body_${id}`) x.classList.remove('active') });
+            const isOp = !h.classList.contains('active');
+            h.classList.toggle('active'); b.classList.toggle('active');
+            if (isOp) setTimeout(() => { h.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200);
+        }
+
+        function renderTiles(containerId, tiles) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = tiles.map(tile => `
+                <div class="tile-card">
+                    <div class="tile-header" id="header_${tile.id}" onclick="toggleTile('${tile.id}')">
+                        <div class="tile-info">${tile.name}<span>1T = ${tile.tilesPerBox}V = ${tile.sqmPerBox}m² = ${tile.weightPerBox}kg</span></div>
+                    </div>
+                    <div class="tile-body" id="body_${tile.id}">
+                        
+                        <div class="input-group" style="position:relative;">
+                            <label>Mã Gạch:</label>
+                            <input type="text" id="code_${tile.id}" placeholder="Gõ 3 chữ số..." oninput="searchStockInTile('${tile.id}', this.value)" autocomplete="off">
+                            <div id="suggest_${tile.id}" class="suggest-box"></div>
+                        </div>
+                        <div id="stock_label_${tile.id}" class="stock-label"></div>
+
+                        <div class="input-group"><label>Số Mét (m²):</label><input type="number" id="sqm_${tile.id}" step="any" oninput="calcFromSqm('${tile.id}', 'sqm')"></div>
+                        
+                        <div class="input-group">
+                            <label>Thùng & Viên:</label>
+                            <div class="box-tile-container">
+                                <input type="number" id="box_${tile.id}" placeholder="Thùng" oninput="calcFromBox('${tile.id}', 'box')" onchange="formatBoxTile('${tile.id}')">
+                                <input type="number" id="tile_${tile.id}" placeholder="Viên" oninput="calcFromBox('${tile.id}', 'tile')" onchange="formatBoxTile('${tile.id}')">
+                            </div>
+                        </div>
+
+                        <div class="line-dash"></div>
+                        <div class="order-action-row">
+                            <div><span style="font-size:0.95rem; color:var(--text-muted); font-weight:700;">Tổng Ký:</span> <span class="result-text" id="weight_${tile.id}">0</span> kg</div>
+                            <button class="btn-send-order" onclick="sendToOrder('${tile.id}')">Tạo ĐH</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        renderTiles('tab-pak', tileData.pak);
+        renderTiles('tab-hg', tileData.hg);
+
+        function getTile(id) { return tileData.pak.find(t => t.id === id) || tileData.hg.find(t => t.id === id); }
+        
+        function calcFromSqm(id, changedField) {
+            const val = document.getElementById(`${changedField}_${id}`).value;
+            if (val === '') { reset(id); return; } 
+            
+            const t = getTile(id); const sqm = parseFloat(val) || 0;
+            const totalV = Math.ceil(sqm / (t.sqmPerBox / t.tilesPerBox));
+            document.getElementById(`box_${id}`).value = Math.floor(totalV / t.tilesPerBox) || '';
+            document.getElementById(`tile_${id}`).value = totalV % t.tilesPerBox || '';
+            document.getElementById(`weight_${id}`).innerText = parseFloat((totalV * (t.weightPerBox / t.tilesPerBox)).toFixed(2));
+            checkRedWarning(id);
+        }
+        
+        function calcFromBox(id, changedField) {
+            const valBox = document.getElementById(`box_${id}`).value;
+            const valTile = document.getElementById(`tile_${id}`).value;
+            if (valBox === '' && valTile === '') { reset(id); return; } 
+            
+            const t = getTile(id); 
+            const box = parseInt(valBox) || 0; 
+            const tile = parseInt(valTile) || 0;
+            const totalV = (box * t.tilesPerBox) + tile;
+            
+            document.getElementById(`sqm_${id}`).value = parseFloat((totalV * (t.sqmPerBox / t.tilesPerBox)).toFixed(3));
+            document.getElementById(`weight_${id}`).innerText = parseFloat((totalV * (t.weightPerBox / t.tilesPerBox)).toFixed(2));
+            checkRedWarning(id);
+        }
+
+        function formatBoxTile(id) {
+            const valBox = document.getElementById(`box_${id}`).value;
+            const valTile = document.getElementById(`tile_${id}`).value;
+            if (valBox === '' && valTile === '') return;
+            
+            const t = getTile(id);
+            const box = parseInt(valBox) || 0; 
+            const tile = parseInt(valTile) || 0;
+            const totalV = (box * t.tilesPerBox) + tile;
+
+            document.getElementById(`box_${id}`).value = Math.floor(totalV / t.tilesPerBox) || '';
+            document.getElementById(`tile_${id}`).value = totalV % t.tilesPerBox || '';
+            checkRedWarning(id);
+        }
+        
+        function reset(id) {
+            document.getElementById(`box_${id}`).value = ''; 
+            document.getElementById(`tile_${id}`).value = '';
+            document.getElementById(`sqm_${id}`).value = ''; 
+            document.getElementById(`weight_${id}`).innerText = '0';
+            
+            const codeInput = document.getElementById(`code_${id}`);
+            if(codeInput) {
+                codeInput.value = ''; codeInput.dataset.stock = -1;
+                document.getElementById(`stock_label_${id}`).innerText = '';
+                document.getElementById(`suggest_${id}`).style.display = 'none';
+                checkRedWarning(id);
+            }
+        }
+
+        document.addEventListener('focusin', function(e) {
+            if (e.target && e.target.tagName === 'INPUT') {
+                setTimeout(() => { e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+            }
+        });
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                console.log('App ready for PWA');
+            });
+        }
+    </script>
+</body>
+</html>
